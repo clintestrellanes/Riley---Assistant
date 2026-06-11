@@ -4,7 +4,7 @@ export default async function AiChat(user_query: string) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ user_query })
+    body: JSON.stringify({ query: user_query })
   })
   const response = await ai.json()
   console.log(response)
