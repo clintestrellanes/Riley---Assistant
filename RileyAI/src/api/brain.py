@@ -1,50 +1,63 @@
 import os
-import json 
-from groq import Groq
+import json
+from groq import AsyncGroq
 from pathlib import Path
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, HTTPException
+from dotenv import load_dotenv
+from pydantic import BaseModel
 
-client = Groq() 
-app = FastAPI()
+load_dotenv() 
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+client = AsyncGroq() 
+router = APIRouter()
 
-current_dir = Path(__file__).parent
-json_path = current_dir / "src" / "sys_prompts.json"
+# Use .resolve() to ensure it builds an absolute, bulletproof path
+current_dir = Path(__file__).parent.resolve()
 
-@app.get("/think")
-def think(user_query: str):
-    print(f"User asked: {user_query}")
-    print(f"Path to prompts: {json_path}")
+# sys prompts
+thinking_prompt_path = current_dir / "../sys_prompts/thinking.md"
+
+class UserQuery(BaseModel):
+    query: str
+
+@router.post("/think")
+async def think(user_query: UserQuery):
+    print(f"User asked: {user_query.query}")
     
-    # Optional: How you would load the prompt from your JSON file
-    with open(json_path, "r", encoding="utf-8") as f:
-        prompts = json.load(f)
-    # system_prompt = prompts["my_prompt_key"]
-    print(json.dumps(prompts, indent=4))
+    # 1. READ SYSTEM PROMPT
+    try:
+        with open(thinking_prompt_path, "r", encoding="utf-8") as f:
+            system_prompt_content = f.read()
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail="System prompt file not found.")
 
-    # 3. Move the Groq call inside the route so it only runs when requested
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a concise, helpful assistant."
-            },
-            {
-                "role": "user",
-                "content": user_query,
-            }
-        ],
-        model="llama3-8b-8192", 
-    )
-
-    return {
-        "response": chat_completion.choices[0].message.content
-    }
+    try:
+        chat_completion = await client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt_content + "\n\nCRITICAL: You must respond ONLY in valid JSON format." 
+                },
+                {
+                    "role": "user",
+                    "content": user_query.query,
+                }
+            ],
+            model="llama-3.3-70b-versatile",
+            response_format={"type": "json_object"} 
+        )
+        
+        response_text = chat_completion.choices[0].message.content
+        print("Raw Chat completion:", response_text)
+        
+        try:
+            json_data = json.loads(response_text)
+        except json.JSONDecodeError:
+            print("Failed to parse JSON. Raw output:", response_text)
+            raise HTTPException(status_code=500, detail="AI did not return valid JSON.")
+        
+        return {"response": json_data}
+        
+    except Exception as e:
+        print(f"Groq API Error: {e}")
+        raise HTTPException(status_code=500, detail="Error generating AI response.")
