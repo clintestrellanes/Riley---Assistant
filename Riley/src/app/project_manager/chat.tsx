@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Maximize2, Minimize2 } from "lucide-react";
-import { RileyBrain } from "../aichat/brain";
-
+import AiChat from "../api/ai";
 
 export default function Chat() {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
@@ -12,7 +11,7 @@ export default function Chat() {
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
   const AIResponse = async (query: string) => {
-    const response = await RileyBrain({ query });
+    const response = await AiChat(query);
     console.log(response)
   }
 

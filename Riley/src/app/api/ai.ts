@@ -1,4 +1,4 @@
-export default async function AIResponse(user_query: string) {
+export default async function AiChat(user_query: string) {
   const ai = await fetch("http://localhost:8000/think", {
     method: "POST",
     headers: {
