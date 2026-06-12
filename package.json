@@ -1,0 +1,24 @@
+{
+  "name": "RileyRoot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "Riley": "concurrently \"cd Riley && pnpm run dev\" \"cd RileyAI && .venv/bin/python main.py\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.3.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "concurrently": "^10.0.3"
+  }
+}
