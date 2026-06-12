@@ -220,7 +220,10 @@ export default function ProjectManager() {
             active_project={active_project}
             />
           )}
-          <Chat />
+              <Chat
+                projects={all_projects}
+                active_project={active_project}
+              />
         </div>)};
       </div>
     </div>

@@ -1,8 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Maximize2, Minimize2 } from "lucide-react";
 import AiChat from "../api/ai";
+import type { all_projects, project } from "../../types/project.types";
 
-export default function Chat() {
+interface ChatProps { 
+  projects: all_projects
+  active_project: project
+}
+
+export default function Chat({projects,active_project}: ChatProps) {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
@@ -21,7 +27,7 @@ export default function Chat() {
   }
   const AIResponse = async (query: string): Promise<string> => {
     try {
-      const res: ChatResponse = await AiChat(query);
+      const res: ChatResponse = await AiChat(query,projects,active_project);
       console.log("the repsonse is ",res.response.message)
       if (res.response.message) {
         return res.response.message
@@ -46,6 +52,7 @@ export default function Chat() {
         },
       ]);
 
+      console.log("ai responsing")
       const aiResponse = await AIResponse(chatMessage);
       setMessages((prev) => [
         ...prev,
