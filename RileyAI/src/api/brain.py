@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 # types prj
 from src.types.project import Project 
@@ -42,8 +42,8 @@ thinking_prompt_path = current_dir / "../sys_prompts/thinking.md"
 
 class UserQuery(BaseModel):
     query: str
-    all_user_projects: List[Project] # must pass all the project for future context or reference 
-    active_project: Project # know the active project the use is chatting with ai 
+    all_user_projects: Optional[List[Project]] # must pass all the project for future context or reference 
+    active_project: Optional[Project] # know the active project the use is chatting with ai 
 
 @router.post("/think")
 async def think(user_query: UserQuery):
@@ -70,7 +70,7 @@ async def think(user_query: UserQuery):
                     "content": user_query.query,
                 }
             ],
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             response_format={"type": "json_object"} 
         )
         
@@ -97,6 +97,8 @@ async def think(user_query: UserQuery):
         if not ai_tools: 
             return {"response": json_data} # send all
         else: 
+            print("======== TOOLS INVOKED IN BRAIN ========")
+            print(ai_tools)
             brain_response = await Brain_Processing(ai_response_model,user_query.query)
             print("============= BRAIN ================")
             print("brain resposne is ",brain_response)
