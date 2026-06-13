@@ -223,6 +223,9 @@ export default function ProjectManager() {
               <Chat
                 projects={all_projects}
                 active_project={active_project}
+                onUpdate={() => {
+                  handleUpdateProjects()
+                }}
               />
         </div>)};
       </div>

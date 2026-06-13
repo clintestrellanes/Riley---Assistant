@@ -3,85 +3,93 @@ import { MessageCircle, X, Send, Maximize2, Minimize2 } from "lucide-react";
 import AiChat from "../api/ai";
 import type { all_projects, project } from "../../types/project.types";
 
-interface ChatProps { 
-  projects: all_projects
-  active_project: project
+// Services
+import AI_Chat_Response_Checker from "../../services/ai_chat_response_checker";
+
+// AI CHAT RESPONSE
+import AINewProjectChat from "./ai_response_comp/new_project";
+
+interface ChatProps {
+  projects: all_projects;
+  active_project: project;
+  onUpdate: () => void;
 }
 
-export default function Chat({projects,active_project}: ChatProps) {
+// 1. UPGRADE STATE INTERFACE TO HOLD PROJECT DATA
+interface ChatMessageState {
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+  projectData?: project; 
+}
+
+export default function Chat({ projects, active_project,onUpdate }: ChatProps) {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
-  const [messages, setMessages] = useState<
-    Array<{ text: string; isUser: boolean; timestamp: Date }>
-  >([]);
+  const [messages, setMessages] = useState<ChatMessageState[]>([]);
+  
   const modalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
-
-  interface ChatResponse {
-    response: {
-      message: string;
-      [key: string]: any; // Include any additional fields returned by the API
-    }
-  }
-  const AIResponse = async (query: string): Promise<string> => {
+  // 2. FIX RETURN TYPE SO IT RETURNS THE FULL OBJECT, NOT JUST A STRING
+  const AIResponse = async (query: string): Promise<any> => {
     try {
-      const res: ChatResponse = await AiChat(query,projects,active_project);
-      console.log("the repsonse is ",res.response.message)
-      if (res.response.message) {
-        return res.response.message
+      const res = await AiChat(query, projects, active_project);
+      
+      if (res && res.response) {
+        // Return the whole response block so handleSendMessage can read it
+        return res; 
       }
-      return "Sorry, I couldn't get a response. Please try again.";
+      return { response: { message: "Sorry, I couldn't get a response. Please try again." } };
     } catch (error) {
       console.error("AI Communication Error:", error);
-      return "An error occurred while connecting to the AI. Please try again later.";
+      return { response: { message: "An error occurred while connecting to the AI. Please try again later." } };
     }
   };
 
   const handleSendMessage = async () => {
     if (chatMessage.trim()) {
-      // Add user message
-      console.log("user query is ", chatMessage);
+      
       setMessages((prev) => [
         ...prev,
-        {
-          text: chatMessage,
-          isUser: true,
-          timestamp: new Date(),
-        },
+        { text: chatMessage, isUser: true, timestamp: new Date() },
       ]);
 
-      console.log("ai responsing")
-      const aiResponse = await AIResponse(chatMessage);
+      const currentMessage = chatMessage; // capture it before clearing
+      setChatMessage("");
+      
+      // Reset heights immediately
+      if (modalTextareaRef.current) modalTextareaRef.current.style.height = "auto";
+      if (chatInputRef.current) chatInputRef.current.style.height = "auto";
+
+      const aiResponse = await AIResponse(currentMessage);
+      
+      // Extract data safely
+      const textMessage = aiResponse?.response?.message || "Error generating message.";
+      const projectData = aiResponse?.response?.project_data;
+
+      // 3. CHECKER LOGIC
+      const response_type = AI_Chat_Response_Checker(aiResponse);
+      
+      // Update state with text AND the project data if it exists
       setMessages((prev) => [
         ...prev,
         {
-          text: aiResponse,
+          text: textMessage,
           isUser: false,
           timestamp: new Date(),
+          // Only attach projectData if the checker confirmed it's a new project
+          projectData: response_type === "new_project" ? projectData : undefined
         },
       ]);
-
-      setChatMessage("");
-
-      // Auto resize textarea after clearing
-      if (modalTextareaRef.current) {
-        modalTextareaRef.current.style.height = "auto";
-      }
-      if (chatInputRef.current) {
-        chatInputRef.current.style.height = "auto";
-      }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Send on Enter (without Shift)
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
-
-      // Close expanded view if it's the bottom bar and modal isn't open
       if (!isModalOpen) {
         setIsChatExpanded(false);
         (e.target as HTMLTextAreaElement).blur();
@@ -111,11 +119,9 @@ export default function Chat({projects,active_project}: ChatProps) {
 
   return (
     <>
-      {/* --- Chatbot Section --- */}
+      {/* --- Compact Chatbot Section --- */}
       <div className="fixed bottom-12 left-1/2 -translate-x-1/2 w-full max-w-3xl px-6 sm:px-10 z-40">
-        {/* This is where the person chats to a chatbot */}
         <div className="relative">
-          {/* Expand to Modal Button */}
           <button
             onClick={() => setIsModalOpen(true)}
             className="absolute -top-12 right-4 p-2 rounded-xl bg-white/40 backdrop-blur-md border border-white/30 shadow-lg hover:bg-white/60 transition-all duration-200 group z-10"
@@ -147,7 +153,6 @@ export default function Chat({projects,active_project}: ChatProps) {
                 style={{ overflow: "hidden" }}
               />
 
-              {/* Send Button for compact view */}
               <button
                 onClick={handleSendMessage}
                 className="absolute right-3 p-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 transition-all duration-200 shadow-md group disabled:opacity-50 disabled:cursor-not-allowed"
@@ -163,15 +168,12 @@ export default function Chat({projects,active_project}: ChatProps) {
       {/* --- Modal for Full Chat View --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setIsModalOpen(false)}
           />
 
-          {/* Modal Content */}
           <div className="relative w-full max-w-4xl h-[600px] bg-white/95 backdrop-blur-xl rounded-2xl border border-white/40 shadow-2xl flex flex-col animate-in slide-in-from-bottom-10 duration-300">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/30 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg">
@@ -221,7 +223,7 @@ export default function Chat({projects,active_project}: ChatProps) {
                 messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex ${message.isUser ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-200`}
+                    className={`flex flex-col ${message.isUser ? "items-end" : "items-start"} animate-in slide-in-from-bottom-2 duration-200`}
                   >
                     <div
                       className={`max-w-[70%] p-3 rounded-2xl ${
@@ -233,6 +235,16 @@ export default function Chat({projects,active_project}: ChatProps) {
                       <p className="text-sm whitespace-pre-wrap">
                         {message.text}
                       </p>
+                      
+                      {/* 4. RENDER THE PROJECT DATA COMPONENT IF IT EXISTS */}
+                      {message.projectData && !message.isUser && (
+                        <AINewProjectChat proj={message.projectData}
+                          onUpdate={() => {
+                          onUpdate() // update the project manager
+                        }}
+                        />
+                      )}
+
                       <p
                         className={`text-xs mt-1 ${message.isUser ? "text-cyan-100" : "text-gray-400"}`}
                       >

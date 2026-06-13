@@ -22,6 +22,7 @@ export default async function AiChat(
     });
   
     const response = await ai.json();
+    console.log("backend response: ",response)
     // recieve anything from the backend
     return response;
   } catch (e) {
