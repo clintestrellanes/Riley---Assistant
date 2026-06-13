@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Maximize2, Minimize2 } from "lucide-react";
 import AiChat from "../api/ai";
-import type { all_projects, project } from "../../types/project.types";
+// Added project_content to the imports
+import type { all_projects, project, project_content } from "../../types/project.types";
 
 // Services
 import AI_Chat_Response_Checker from "../../services/ai_chat_response_checker";
 
 // AI CHAT RESPONSE
 import AINewProjectChat from "./ai_response_comp/new_project";
+import AINewContainerChat from "./ai_response_comp/new_container";
 
 interface ChatProps {
   projects: all_projects;
@@ -15,15 +17,16 @@ interface ChatProps {
   onUpdate: () => void;
 }
 
-// 1. UPGRADE STATE INTERFACE TO HOLD PROJECT DATA
+// 1. UPGRADE STATE INTERFACE TO HOLD BOTH TYPES OF DATA
 interface ChatMessageState {
   text: string;
   isUser: boolean;
   timestamp: Date;
   projectData?: project; 
+  containerData?: project_content[]; // Added container array support
 }
 
-export default function Chat({ projects, active_project,onUpdate }: ChatProps) {
+export default function Chat({ projects, active_project, onUpdate }: ChatProps) {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
@@ -32,13 +35,11 @@ export default function Chat({ projects, active_project,onUpdate }: ChatProps) {
   const modalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // 2. FIX RETURN TYPE SO IT RETURNS THE FULL OBJECT, NOT JUST A STRING
   const AIResponse = async (query: string): Promise<any> => {
     try {
       const res = await AiChat(query, projects, active_project);
       
       if (res && res.response) {
-        // Return the whole response block so handleSendMessage can read it
         return res; 
       }
       return { response: { message: "Sorry, I couldn't get a response. Please try again." } };
@@ -56,31 +57,33 @@ export default function Chat({ projects, active_project,onUpdate }: ChatProps) {
         { text: chatMessage, isUser: true, timestamp: new Date() },
       ]);
 
-      const currentMessage = chatMessage; // capture it before clearing
+      const currentMessage = chatMessage; 
       setChatMessage("");
       
-      // Reset heights immediately
       if (modalTextareaRef.current) modalTextareaRef.current.style.height = "auto";
       if (chatInputRef.current) chatInputRef.current.style.height = "auto";
 
       const aiResponse = await AIResponse(currentMessage);
       
-      // Extract data safely
       const textMessage = aiResponse?.response?.message || "Error generating message.";
       const projectData = aiResponse?.response?.project_data;
-
-      // 3. CHECKER LOGIC
-      const response_type = AI_Chat_Response_Checker(aiResponse);
       
-      // Update state with text AND the project data if it exists
+      // Assumes your backend returns the array under a "container_data" key 
+      // e.g. { response: { message: "...", container_data: [...] } }
+      const containerData = aiResponse?.response?.container_data; 
+
+      const response_type = AI_Chat_Response_Checker(aiResponse);
+
       setMessages((prev) => [
         ...prev,
         {
           text: textMessage,
           isUser: false,
           timestamp: new Date(),
-          // Only attach projectData if the checker confirmed it's a new project
-          projectData: response_type === "new_project" ? projectData : undefined
+          // Attach projectData if the checker confirmed it's a new project
+          projectData: response_type === "new_project" ? projectData : undefined,
+          // Attach containerData if the checker confirmed it's a new container
+          containerData: response_type === "new_container" ? containerData : undefined
         },
       ]);
     }
@@ -236,12 +239,20 @@ export default function Chat({ projects, active_project,onUpdate }: ChatProps) {
                         {message.text}
                       </p>
                       
-                      {/* 4. RENDER THE PROJECT DATA COMPONENT IF IT EXISTS */}
+                      {/* RENDER NEW PROJECT CARD */}
                       {message.projectData && !message.isUser && (
-                        <AINewProjectChat proj={message.projectData}
-                          onUpdate={() => {
-                          onUpdate() // update the project manager
-                        }}
+                        <AINewProjectChat 
+                          proj={message.projectData}
+                          onUpdate={() => onUpdate()}
+                        />
+                      )}
+
+                      {/* RENDER NEW CONTAINER CARD */}
+                      {message.containerData && !message.isUser && (
+                        <AINewContainerChat 
+                          project_cont={message.containerData}
+                          active_project={active_project}
+                          onUpdate={() => onUpdate()}
                         />
                       )}
 

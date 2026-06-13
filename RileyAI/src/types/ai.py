@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List, Literal
 
 # ======= PROJECT TYPES ======= # 
-from src.types.project import Project 
+from src.types.project import Project,ProjectContent
 # ======= PROJECT TYPES ======= #  
 
 # Raw Chat completion: {
@@ -53,3 +53,8 @@ class Create_Project_AI_Response (BaseModel):
     message: str
     status: Literal["completed","failed"]
     project_data: Project
+
+class Create_Container_AI_Response(BaseModel):
+    message: str
+    status: Literal["completed","failed"]
+    container_data: List[ProjectContent]

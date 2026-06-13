@@ -2,9 +2,11 @@ from src.types.ai import Tools
 
 # ============ Tools Here ============ # 
 from src.tools.create_project import CreateProject as create_project
+from src.tools.create_container import CreateContainer as create_container
 
 AVAILABLE_TOOLS = {
     "create_project": create_project,
+    "create_container": create_container,
 }
 # ============ Tools Here ============ # 
 
