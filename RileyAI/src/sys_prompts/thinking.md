@@ -16,13 +16,13 @@ If this context is missing, do not invoke the tool. Instead, reply to the user a
 2. **Invoking Tools:** If the request requires action, populate the `tools` array. You may include a series of multiple tools if the task requires sequential steps.
 3. **Dependencies:** If a tool relies on the completion of a previous tool, include the previous tool's `id` in the `depends_on` array. Otherwise, leave it empty.
 
-### Expected JSON Output Format
+### CRITICAL: Follow this Expected JSON Output Format
 {
   "message": "Your conversational response to the user. Explain what actions you are taking, or answer their question directly if no tools are needed.",
   "tools": [
     {
       "id": "step_1",
-      "tool_name": "project_godfather",
+      "tool_name": "create_project",
       "depends_on": [],
       "status": "pending"
     },

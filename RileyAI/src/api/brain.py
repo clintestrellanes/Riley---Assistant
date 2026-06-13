@@ -7,12 +7,31 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import List
 
-# types
+# types prj
 from src.types.project import Project 
+
+# types ai
+from src.types.ai import Tools
+
+
+
+#  ===== Services From Brain ==== # 
+from src.service.brain.brain_processing import Brain_Processing
+#  ===== Services From Brain ==== # 
+
+
+
+#  ===== Services ==== # 
+from src.service.jsonify import jsonify
+#  ===== Services ==== # 
+
+
+
+
 
 load_dotenv() 
 
-client = AsyncGroq() 
+client = AsyncGroq( ) 
 router = APIRouter()
 
 # Use .resolve() to ensure it builds an absolute, bulletproof path
@@ -70,10 +89,20 @@ async def think(user_query: UserQuery):
         # ->        json_data       <--
         # -> Extract the tools Here <--
 
+        ai_message = json_data.get("message", "Sorry, no message was generated.")
+        ai_tools = json_data.get("tools", [])
+        ai_response_model = await jsonify(response_text,Tools)
+        
 
-
-        return {"response": json_data}
+        if not ai_tools: 
+            return {"response": json_data} # send all
+        else: 
+            brain_response = await Brain_Processing(ai_response_model,user_query.query)
+            print("============= BRAIN ================")
+            print("brain resposne is ",brain_response)
+            return {"response":brain_response}
         
     except Exception as e:
         print(f"Groq API Error: {e}")
+        
         raise HTTPException(status_code=500, detail="Error generating AI response.")
