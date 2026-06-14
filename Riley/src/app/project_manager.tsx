@@ -5,6 +5,7 @@ import {
   Plus,
   Filter,
   MoreHorizontal,
+  Download,
 } from "lucide-react";
 
 // components
@@ -73,6 +74,28 @@ export default function ProjectManager() {
       set_all_projects([]);
       set_active_project(null);
     }
+  };
+
+  const handleSaveProject = () => {
+    // Get the stringified JSON directly from localStorage
+    const active_prj: project = active_project;
+
+    if (!active_prj || active_prj === null) {
+      alert("No projects to save!");
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(active_prj, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `RileyProjects_Project_Backup_${new Date().toISOString().split("T")[0]}.json`; 
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -163,6 +186,13 @@ export default function ProjectManager() {
                 <span className="text-white font-medium tracking-wide hidden sm:inline">
                   New Container
                 </span>
+              </button>
+              <button
+                onClick={handleSaveProject}
+                className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                title="Download all projects as JSON"
+              >
+                <Download className="w-4 h-4" />
               </button>
             </div>
 
