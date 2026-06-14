@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import type { project, all_projects } from "../../types/project.types";
-import { ChevronRight, ChevronLeft, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Plus,
+  Trash2,
+  Download,
+} from "lucide-react";
 
 interface SidebarProps {
   projects: all_projects;
@@ -9,10 +15,15 @@ interface SidebarProps {
   onUpdate: () => void;
 }
 
-export default function Sidebar({ projects, active_project, set_active_project, onUpdate }: SidebarProps) {
+export default function Sidebar({
+  projects,
+  active_project,
+  set_active_project,
+  onUpdate,
+}: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
-  
+
   // States for inline renaming existing projects
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -41,13 +52,36 @@ export default function Sidebar({ projects, active_project, set_active_project, 
   // Helper to accurately reflect the active project based on its title
   const isActive = (proj: project) => active_project?.title === proj.title;
 
+  const handleSaveAllProject = () => {
+    // Get the stringified JSON directly from localStorage
+    const all_projects_local = localStorage.getItem("RileyProjects");
+
+    if (!all_projects_local || all_projects_local === "[]") {
+      alert("No projects to save!");
+      return;
+    }
+
+    const blob = new Blob([all_projects_local], { type: "application/json" });
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `RileyProjects_Backup_${new Date().toISOString().split("T")[0]}.json`; // e.g. RileyProjects_Backup_2026-06-14.json
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleDelete = (e: React.MouseEvent, proj: project) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     const new_list = projects.filter((p) => p.title !== proj.title);
-    
+
     localStorage.setItem("RileyProjects", JSON.stringify(new_list));
     onUpdate();
-    
+
     if (isActive(proj)) {
       set_active_project(new_list[0] || null);
     }
@@ -66,18 +100,26 @@ export default function Sidebar({ projects, active_project, set_active_project, 
       return;
     }
 
-    if (projects.some((p) => p.title.toLowerCase() === newTitle.toLowerCase() && p.title !== oldTitle)) {
+    if (
+      projects.some(
+        (p) =>
+          p.title.toLowerCase() === newTitle.toLowerCase() &&
+          p.title !== oldTitle,
+      )
+    ) {
       alert("A project with this name already exists.");
-      return; 
+      return;
     }
 
-    const updatedProjects = projects.map((p) => 
-      p.title === oldTitle ? { ...p, title: newTitle, updated_at: new Date().toISOString() } : p
+    const updatedProjects = projects.map((p) =>
+      p.title === oldTitle
+        ? { ...p, title: newTitle, updated_at: new Date().toISOString() }
+        : p,
     );
 
     localStorage.setItem("RileyProjects", JSON.stringify(updatedProjects));
     onUpdate();
-    
+
     if (active_project?.title === oldTitle) {
       const updatedActive = updatedProjects.find((p) => p.title === newTitle);
       if (updatedActive) set_active_project(updatedActive);
@@ -97,8 +139,12 @@ export default function Sidebar({ projects, active_project, set_active_project, 
     }
 
     // Check for duplicates
-    if (projects.some((p) => p.title.toLowerCase() === trimmedTitle.toLowerCase())) {
-      alert("A project with this name already exists. Please choose a different name.");
+    if (
+      projects.some((p) => p.title.toLowerCase() === trimmedTitle.toLowerCase())
+    ) {
+      alert(
+        "A project with this name already exists. Please choose a different name.",
+      );
       return; // Keep input open so they can change it
     }
 
@@ -109,13 +155,13 @@ export default function Sidebar({ projects, active_project, set_active_project, 
       updated_at: new Date().toISOString(),
       content: [],
     };
-    
+
     const updatedProjects = [...projects, newProject];
-    
+
     localStorage.setItem("RileyProjects", JSON.stringify(updatedProjects));
     onUpdate();
     set_active_project(newProject);
-    
+
     // Reset and close input
     setIsCreating(false);
     setNewProjectTitle("");
@@ -138,6 +184,13 @@ export default function Sidebar({ projects, active_project, set_active_project, 
             <h1 className="text-lg font-bold text-gray-900 tracking-tight">
               Projects
             </h1>
+            <button
+              onClick={handleSaveAllProject}
+              className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              title="Download all projects as JSON"
+            >
+              <Download className="w-4 h-4" />
+            </button>
             <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
               {projects.length}
             </span>
@@ -172,8 +225,8 @@ export default function Sidebar({ projects, active_project, set_active_project, 
                           active
                             ? "bg-gray-900 scale-125"
                             : hoveredProject === idx
-                            ? "bg-gray-400"
-                            : "bg-gray-300"
+                              ? "bg-gray-400"
+                              : "bg-gray-300"
                         }`}
                       />
                     </div>
@@ -188,8 +241,8 @@ export default function Sidebar({ projects, active_project, set_active_project, 
                           onChange={(e) => setEditValue(e.target.value)}
                           onBlur={() => submitRename(proj.title)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') submitRename(proj.title);
-                            if (e.key === 'Escape') setEditingTitle(null);
+                            if (e.key === "Enter") submitRename(proj.title);
+                            if (e.key === "Escape") setEditingTitle(null);
                           }}
                           className="w-full text-sm font-medium text-gray-900 bg-gray-100/80 border border-gray-200 rounded px-1.5 py-0.5 outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all"
                         />
@@ -213,8 +266,8 @@ export default function Sidebar({ projects, active_project, set_active_project, 
                       <button
                         onClick={(e) => handleDelete(e, proj)}
                         className={`p-1.5 rounded-md transition-all duration-200 ${
-                          active 
-                            ? "opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50" 
+                          active
+                            ? "opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50"
                             : "opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 hover:bg-red-50"
                         }`}
                         aria-label="Delete project"
@@ -227,8 +280,8 @@ export default function Sidebar({ projects, active_project, set_active_project, 
                           active
                             ? "opacity-100 text-gray-900"
                             : hoveredProject === idx
-                            ? "opacity-100 translate-x-0 text-gray-400"
-                            : "opacity-0 -translate-x-2 text-gray-300"
+                              ? "opacity-100 translate-x-0 text-gray-400"
+                              : "opacity-0 -translate-x-2 text-gray-300"
                         }`}
                       />
                     </div>
@@ -255,8 +308,8 @@ export default function Sidebar({ projects, active_project, set_active_project, 
                   onChange={(e) => setNewProjectTitle(e.target.value)}
                   onBlur={submitNewProject}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') submitNewProject();
-                    if (e.key === 'Escape') {
+                    if (e.key === "Enter") submitNewProject();
+                    if (e.key === "Escape") {
                       setIsCreating(false);
                       setNewProjectTitle("");
                     }
