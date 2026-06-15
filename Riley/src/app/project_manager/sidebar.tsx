@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
   Download,
+  Upload
 } from "lucide-react";
 
 interface SidebarProps {
@@ -167,6 +168,63 @@ export default function Sidebar({
     setNewProjectTitle("");
   };
 
+  const handleImportProjects = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    input.onchange = (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event: any) => {
+        try {
+          const importedData = JSON.parse(event.target.result);
+
+          // Handle both single project and array of projects
+          const projectsToAdd = Array.isArray(importedData)
+            ? importedData
+            : [importedData];
+
+          // Check for duplicate project titles
+          const existingTitles = projects.map((p) => p.title.toLowerCase());
+          const duplicates = projectsToAdd.filter((p: any) =>
+            existingTitles.includes(p.title.toLowerCase())
+          );
+
+          if (duplicates.length > 0) {
+            const duplicateNames = duplicates.map((p: any) => p.title).join(", ");
+            alert(
+              `Projects with these names already exist and were skipped: ${duplicateNames}`
+            );
+          }
+
+          // Filter out duplicates and add new projects
+          const newProjects = projectsToAdd.filter(
+            (p: any) => !existingTitles.includes(p.title.toLowerCase())
+          );
+
+          if (newProjects.length === 0) {
+            alert("No new projects to import.");
+            return;
+          }
+
+          const updatedProjects = [...projects, ...newProjects];
+          localStorage.setItem("RileyProjects", JSON.stringify(updatedProjects));
+          onUpdate();
+          alert(`Successfully imported ${newProjects.length} new project(s)!`);
+        } catch (error) {
+          alert(
+            "Error parsing JSON file. Please ensure it's a valid JSON file."
+          );
+          console.error(error);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
   return (
     <aside
       className={`relative h-screen flex-shrink-0 transition-all duration-300 ease-in-out z-20 ${
@@ -190,6 +248,13 @@ export default function Sidebar({
               title="Download all projects as JSON"
             >
               <Download className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleImportProjects}
+              className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              title="Import projects from JSON"
+            >
+              <Upload className="w-4 h-4" />
             </button>
             <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
               {projects.length}
