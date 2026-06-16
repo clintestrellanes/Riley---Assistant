@@ -15,8 +15,10 @@ import SpotlightCard from "@/components/SpotlightCard";
 // my components
 import Chat from "./project_manager/chat";
 import Sidebar from "./project_manager/sidebar";
+
 import ContainerModal from "./project_manager/modal_container";
 import NewContainer from "./project_manager/modal_new_container";
+import ModalCreateNew from "./project_manager/modal.create.new";
 
 // types
 import type {
@@ -44,7 +46,7 @@ export default function ProjectManager() {
   });
 
   // modals
-  const [containerModalOpen, setContainerModalOpen] = useState<boolean>(false);
+  const [createNew, setCreateNew] = useState<boolean>(false);
   const [newContainerModalOpen, setNewContainerModalOpen] =
     useState<boolean>(false);
 
@@ -85,12 +87,14 @@ export default function ProjectManager() {
       return;
     }
 
-    const blob = new Blob([JSON.stringify(active_prj, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(active_prj, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `RileyProjects_Project_Backup_${new Date().toISOString().split("T")[0]}.json`; 
+    link.download = `RileyProjects_Project_Backup_${new Date().toISOString().split("T")[0]}.json`;
 
     document.body.appendChild(link);
     link.click();
@@ -179,12 +183,12 @@ export default function ProjectManager() {
               <button
                 className="px-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:-translate-y-0.5 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400/60 group flex items-center gap-2 border border-white/10"
                 onClick={() => {
-                  setNewContainerModalOpen(true);
+                  setCreateNew(true);
                 }}
               >
                 <Plus className="w-5 h-5 text-white group-hover:rotate-90 transition-transform duration-300" />
                 <span className="text-white font-medium tracking-wide hidden sm:inline">
-                  New Container
+                  New
                 </span>
               </button>
               <button
@@ -249,18 +253,7 @@ export default function ProjectManager() {
                 )}
               </div>
             </div>
-            {containerModalOpen && (
-              <ContainerModal
-                // project={active_project_content}
-                projects={all_projects}
-                active_project={active_project}
-                project_content={active_project_content}
-                onClose={() => {
-                  handleUpdateProjects();
-                  setContainerModalOpen(false);
-                }}
-              />
-            )}
+
             {newContainerModalOpen && (
               <NewContainer
                 onClose={() => {
@@ -269,6 +262,15 @@ export default function ProjectManager() {
                 }}
                 projects={all_projects}
                 active_project={active_project}
+              />
+            )}
+            {createNew && (
+              <ModalCreateNew
+                projects={all_projects}
+                active_project={active_project}
+                onClose={() => {
+                  setCreateNew(false);
+                }}
               />
             )}
           </div>
