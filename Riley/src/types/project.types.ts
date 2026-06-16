@@ -1,3 +1,6 @@
+import type { DateCell } from "./calendar";
+
+
 // root/parent
 export interface all_projects{
   projects: project[];
@@ -11,6 +14,8 @@ export interface project {
   created_at: string;
   updated_at: string;
   content: project_content[];
+  hasCalendar: boolean;
+  events?: DateCell // optional at first cus they dont have scheudle at first
 }
 
 // use in sidebar

@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { FolderPlus, CalendarPlus, X } from "lucide-react"; // Requires: npm install lucide-react
+import { FolderPlus, CalendarPlus, X } from "lucide-react";
 
 // components
 import NewContainer from "./modal_new_container";
-import CreateCalendar from "./modal.create.calendar";
-
 import type { all_projects, project } from "../../types/project.types";
 
 interface ModalCreateNewProps {
   projects: all_projects;
   active_project: project;
   onClose: () => void;
+  // Optional: add an onUpdate callback if your parent component needs to know about the new data
+  // onUpdate?: (updatedProjects: all_projects) => void; 
 }
 
 export default function ModalCreateNew({
@@ -20,8 +20,26 @@ export default function ModalCreateNew({
 }: ModalCreateNewProps) {
   const [activeModal, setActiveModal] = useState<"container" | "calendar" | null>(null);
 
-  // 1. Render child components directly if selected.
-  // This assumes NewContainer and CreateCalendar have their own modal UI/wrappers.
+  const handleCreateCalendar = () => {
+    if (!active_project.hasCalendar) {
+      console.log("cal status",active_project.hasCalendar)
+      const new_active_project = { 
+        ...active_project, 
+        hasCalendar: true, 
+        events: [] 
+      };
+      
+      const remaining_projects = projects.filter((p) => p.title !== active_project.title);
+      const updated_projects = [new_active_project, ...remaining_projects];
+      
+      localStorage.setItem("RileyProjects", JSON.stringify(updated_projects));
+      
+     
+    }
+
+    onClose();
+  };
+
   if (activeModal === "container") {
     return (
       <NewContainer
@@ -32,11 +50,6 @@ export default function ModalCreateNew({
     );
   }
 
-  if (activeModal === "calendar") {
-    return <CreateCalendar onClose={onClose} />;
-  }
-
-  // 2. Default state: Show the selection menu
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
       <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
@@ -71,7 +84,7 @@ export default function ModalCreateNew({
 
           {/* Calendar Button */}
           <button
-            onClick={() => setActiveModal("calendar")}
+            onClick={handleCreateCalendar}
             className="group flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-gray-100 bg-gray-50 p-6 transition-all hover:border-purple-500 hover:bg-purple-50 hover:shadow-md"
           >
             <div className="rounded-full bg-purple-100 p-3 text-purple-600 transition-transform group-hover:scale-110">

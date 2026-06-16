@@ -155,6 +155,7 @@ export default function Sidebar({
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       content: [],
+      hasCalendar: false,
     };
 
     const updatedProjects = [...projects, newProject];

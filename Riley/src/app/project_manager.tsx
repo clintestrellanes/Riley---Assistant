@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   ArrowUpDown,
@@ -15,6 +16,7 @@ import SpotlightCard from "@/components/SpotlightCard";
 // my components
 import Chat from "./project_manager/chat";
 import Sidebar from "./project_manager/sidebar";
+import CalendarView from "./project_manager/calendar";
 
 import ContainerModal from "./project_manager/modal_container";
 import NewContainer from "./project_manager/modal_new_container";
@@ -29,6 +31,7 @@ import type {
 
 export default function ProjectManager() {
   const [searchQuery, setSearchQuery] = useState<string>("");
+
   // all projects
   const [all_projects, set_all_projects] = useState<all_projects>(() => {
     const savedProjects = localStorage.getItem("RileyProjects");
@@ -37,6 +40,7 @@ export default function ProjectManager() {
     }
     return [];
   });
+
   // specific project
   const [active_project, set_active_project] = useState<project | null>(() => {
     if (all_projects.length > 0) {
@@ -101,6 +105,11 @@ export default function ProjectManager() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
+
+  // router
+  const navigate = useNavigate();
+
+  // view
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-gray-950">
@@ -203,6 +212,44 @@ export default function ProjectManager() {
             {/* --- Cards Section --- */}
             <div className="w-full max-w-6xl flex-1 overflow-y-auto no-scrollbar pb-20 pr-2">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 content-start">
+                {active_project.hasCalendar && (
+                  <div
+                    onClick={() => {
+                      navigate(`/calendar/${active_project.title}`);
+                    }}
+                  >
+                    <SpotlightCard
+                      // key={}
+                      className="custom-spotlight-card h-full p-6 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 cursor-pointer flex flex-col group hover:-translate-y-1 hover:border-white/20"
+                      spotlightColor="rgba(0, 229, 255, 0.15)"
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                          <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
+                        </div>
+                        <div className="w-8 h-8 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all duration-200 cursor-pointer flex items-center justify-center">
+                          <MoreHorizontal className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <h2 className="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors duration-200 tracking-tight">
+                        CALENDAR
+                      </h2>
+
+                      {/* Card Footer */}
+                      <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between opacity-70 group-hover:opacity-100 transition-opacity duration-200">
+                        <span className="text-xs text-cyan-400 font-semibold tracking-wide uppercase">
+                          Read more
+                        </span>
+                        <span className="text-cyan-400 transform translate-x-0 group-hover:translate-x-1 transition-transform duration-300">
+                          →
+                        </span>
+                      </div>
+                    </SpotlightCard>
+                  </div>
+                )}
                 {active_project?.content?.map(
                   (item: project_content, index: number) => {
                     return (
@@ -269,6 +316,7 @@ export default function ProjectManager() {
                 projects={all_projects}
                 active_project={active_project}
                 onClose={() => {
+                  handleUpdateProjects();
                   setCreateNew(false);
                 }}
               />
