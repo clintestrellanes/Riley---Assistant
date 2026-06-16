@@ -22,7 +22,9 @@ Your output must perfectly match the following structure. Do not add keys that d
         "title": "[Category Title]",
         "information": "[Detailed information]"
       }
-    ]
+    ],
+    "hasCalendar": false,
+    "events": null
   }
 }
 
@@ -37,6 +39,8 @@ Your output must perfectly match the following structure. Do not add keys that d
     - "Database Schema" (Tables, relationships)
     - "Core Features" (Primary capabilities of the app)
     - "Target Audience" (Who the app is for)
+7. **hasCalendar:** Evaluate the user's requirements. If the application involves booking, scheduling, appointments, or explicitly mentions a calendar, set this boolean to `true`. Otherwise, set it to `false`.
+8. **events:** Initialize this as an empty array `[]` unless specific calendar event data is explicitly provided in the prompt.
 
 # Example Execution
 
@@ -68,6 +72,8 @@ Your output must perfectly match the following structure. Do not add keys that d
         "title": "Database Architecture",
         "information": "Initial tables identified: users, appointments, dentist_available_schedules."
       }
-    ]
+    ],
+    "hasCalendar": true,
+    "events": []
   }
 }
