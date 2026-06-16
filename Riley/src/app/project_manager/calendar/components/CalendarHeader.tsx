@@ -8,10 +8,15 @@ import {
   Moon, 
   Sun, 
   Plus,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Trash,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+
 import type { ViewMode } from '../../../../types/calendar';
 import { MONTHS } from '../utils/calendarUtils';
+import type { project,all_projects } from '../../../../types/project.types';
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -23,6 +28,8 @@ interface CalendarHeaderProps {
   onNewEvent: () => void;
   darkMode: boolean;
   onToggleDarkMode: () => void;
+  proj: project;
+  projects: all_projects;
 }
 
 export default function CalendarHeader({
@@ -35,7 +42,14 @@ export default function CalendarHeader({
   onNewEvent,
   darkMode,
   onToggleDarkMode,
+  proj,
+  projects,
 }: CalendarHeaderProps) {
+
+  const navigate = useNavigate();
+
+
+  
   const monthName = MONTHS[currentDate.getMonth()];
   const year = currentDate.getFullYear();
 
@@ -46,6 +60,22 @@ export default function CalendarHeader({
     }
     return `${monthName} ${year}`;
   };
+
+  const handleDelete = () => {
+    console.log('d')
+    const updated_project = {
+      ...proj,
+      hasCalendar: false
+    }
+    const remove_previous_project = projects.filter((p:project) => p.title !== proj.title);
+
+    const updated_projects = [updated_project, ...remove_previous_project];
+    localStorage.setItem('RileyProjects', JSON.stringify(updated_projects));
+    navigate('/');
+  }
+
+
+  
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 transition-colors duration-200">
@@ -181,16 +211,9 @@ export default function CalendarHeader({
             </button>
 
             {/* User Profile */}
-            <div className="h-8 w-8 overflow-hidden rounded-full border border-gray-300 dark:border-slate-700 bg-gray-100 dark:bg-slate-800">
-              <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80"
-                alt="Profile"
-                onError={(e) => {
-                  // Fallback if image fails to load
-                  (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=Clint`;
-                }}
-                className="h-full w-full object-cover"
-              />
+            <div className="h-8 w-8 overflow-hidden rounded-full border border-gray-300 dark:border-slate-700 bg-gray-100 dark:bg-slate-800"
+              onClick={()=> handleDelete()}>
+              <Trash className="h-full w-full object-cover" />
             </div>
           </div>
 

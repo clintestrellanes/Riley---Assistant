@@ -12,13 +12,13 @@ import type { CalendarEvent, ViewMode } from '../../../types/calendar';
 import { AnimatePresence } from 'motion/react';
 
 // types
-import type { project } from '../../../types/project.types';
+import type { project,all_projects } from '../../../types/project.types';
 
 export default function CalendarView() {
   const { title } = useParams();
   
   // Fetch projects and current project once on mount
-  const [projects, setProjects] = useState<project[]>(() => {
+  const [projects, setProjects] = useState<all_projects>(() => {
     const saved = localStorage.getItem("RileyProjects");
     return saved ? JSON.parse(saved) : [];
   });
@@ -171,6 +171,8 @@ export default function CalendarView() {
         onNewEvent={handleNewEvent}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
+        proj={currentProject}
+        projects={projects}
       />
 
       {/* 2. Main content display grid */}

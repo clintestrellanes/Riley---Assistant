@@ -16,7 +16,7 @@ import SpotlightCard from "@/components/SpotlightCard";
 // my components
 import Chat from "./project_manager/chat";
 import Sidebar from "./project_manager/sidebar";
-import CalendarView from "./project_manager/calendar";
+import ModalContainerOptions from "./project_manager/modal.container.options";
 
 import ContainerModal from "./project_manager/modal_container";
 import NewContainer from "./project_manager/modal_new_container";
@@ -51,7 +51,10 @@ export default function ProjectManager() {
 
   // modals
   const [createNew, setCreateNew] = useState<boolean>(false);
+  const [containerModalOpen, setContainerModalOpen] = useState<boolean>(false);
   const [newContainerModalOpen, setNewContainerModalOpen] =
+    useState<boolean>(false);
+  const [isContainerOptionOpen, setIsContainerOptionOpen] =
     useState<boolean>(false);
 
   // specific content inside a project
@@ -225,9 +228,6 @@ export default function ProjectManager() {
                     >
                       {/* Card Header */}
                       <div className="flex items-start justify-between mb-4">
-                        <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                          <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
-                        </div>
                         <div className="w-8 h-8 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all duration-200 cursor-pointer flex items-center justify-center">
                           <MoreHorizontal className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
@@ -265,10 +265,13 @@ export default function ProjectManager() {
                           spotlightColor="rgba(0, 229, 255, 0.15)"
                         >
                           {/* Card Header */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                              <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.8)]"></div>
-                            </div>
+                          <div className="flex items-start justify-between mb-4"
+                            onClick={(e) => {
+                              set_active_project_content(item);
+                              setIsContainerOptionOpen(true);
+                              e.stopPropagation();
+                            }}
+                          >
                             <div className="w-8 h-8 rounded-lg text-gray-500 hover:text-white hover:bg-white/10 transition-all duration-200 cursor-pointer flex items-center justify-center">
                               <MoreHorizontal className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
@@ -321,6 +324,29 @@ export default function ProjectManager() {
                 }}
               />
             )}
+            {containerModalOpen && (
+              <ContainerModal
+                onClose={() => {
+                  setContainerModalOpen(false);
+                }}
+                project_content={active_project_content}
+                projects={all_projects}
+                active_project={active_project}
+              />
+              )}
+              {isContainerOptionOpen && (
+                <ModalContainerOptions
+                  onClose={() => {
+                    setIsContainerOptionOpen(false);
+                  }}
+                  onUpdate={() => {
+                    handleUpdateProjects();
+                  }}
+                  active_project={active_project}
+                  projects={all_projects}
+                  container={active_project_content}
+                />
+              )}
           </div>
         )}
         ;
