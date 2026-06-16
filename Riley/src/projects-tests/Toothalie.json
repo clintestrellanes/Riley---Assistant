@@ -1,66 +1,51 @@
-  [
-    {
-      "title": "Toothalie",
-      "description": "",
-      "created_at": "",
-      "updated_at": "",
-      "content": [
-        {
-          "title": "Problems encountered",
-          "information": "bla bla bla prolems "
-        },
-        {
-          "title": "Database",
-          "information": "bla bla database"
-        }    
-      ]
-    },
+[
   {
-    "title": "Dingle",
+    "title": "Proejct Riley",
     "description": "",
-    "created_at": "",
-    "updated_at": "",
+    "created_at": "2026-06-16T05:16:18.728Z",
+    "updated_at": "2026-06-16T05:16:18.728Z",
     "content": [
       {
-        "title": "Data",
-        "information": "bla bla bla some data "
-      },
-      {
-        "title": "Database",
-        "information": "bla bla some data"
-      }    
-    ]
+        "title": "Todos",
+        "information": "1. "
+      }
+    ],
+    "hasCalendar": false
   },
   {
-    "title": "Tuu",
-    "description": "",
-    "created_at": "",
-    "updated_at": "",
+    "id": 1781585217163,
+    "title": "Yummy Cookie",
+    "description": "A project to launch a profitable cookie store offering fresh, high-quality cookies with unique flavors and excellent customer service.",
+    "created_at": "2026-06-16T12:00:00Z",
+    "updated_at": "2026-06-16T12:00:00Z",
     "content": [
       {
-        "title": "Eres pan",
-        "information": "I eat pan "
+        "id": 1781585217164,
+        "title": "Project Goal",
+        "information": "Launch a profitable cookie store offering fresh, high-quality cookies with unique flavors and excellent customer service."
       },
       {
-        "title": "Something",
-        "information": "Something is nothing"
-      }    
-    ]
-  },
-  {
-    "title": "Halo",
-    "description": "",
-    "created_at": "",
-    "updated_at": "",
-    "content": [
-      {
-        "title": "This is not a food",
-        "information": "somethings wrong "
+        "id": 1781585217165,
+        "title": "Timeline",
+        "information": "8‑week schedule covering planning, legal permits, location setup, menu development, branding, hiring, soft launch, and grand opening."
       },
       {
-        "title": "I love funk",
-        "information": "Funk"
-      }    
-    ]
+        "id": 1781585217166,
+        "title": "Key Tasks",
+        "information": "Planning, legal registration, equipment purchase, recipe finalization, marketing creation, staff hiring and training, and launch preparations."
+      },
+      {
+        "id": 1781585217167,
+        "title": "Risks & Mitigations",
+        "information": "Permit delays mitigated by early application; supplier issues mitigated by backup vendors; low traffic mitigated by free cookie promotion."
+      },
+      {
+        "id": 1781585217168,
+        "title": "Success Metrics",
+        "information": "First month revenue of $5,000+, 4.5+ star rating, and 20% repeat customer rate by month two."
+      }
+    ],
+    "hasCalendar": true,
+    "events": []
   }
-  ]
+]
