@@ -10,7 +10,7 @@ import {
   Upload, // NEW: Icon for import
   CheckSquare, // NEW: Icon for selected state
   Square, // NEW: Icon for unselected state
-  X // NEW: Icon to clear selection
+  X, // NEW: Icon to clear selection
 } from "lucide-react";
 
 // components
@@ -65,7 +65,7 @@ export default function ProjectManager() {
     useState<project_content | null>(null);
 
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpdateProjects = () => {
@@ -79,7 +79,7 @@ export default function ProjectManager() {
 
       if (active_project) {
         const updatedActiveProject = savedProjects.find(
-          (p: project) => p.title === active_project.title, 
+          (p: project) => p.title === active_project.title,
         );
         set_active_project(updatedActiveProject || savedProjects[0]);
       } else {
@@ -117,9 +117,7 @@ export default function ProjectManager() {
   // NEW: Toggle container selection
   const toggleSelection = (title: string) => {
     setSelectedContainers((prev) =>
-      prev.includes(title)
-        ? prev.filter((t) => t !== title)
-        : [...prev, title]
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
     );
   };
 
@@ -128,7 +126,7 @@ export default function ProjectManager() {
     if (selectedContainers.length === 0 || !active_project?.content) return;
 
     const containersToExport = active_project.content.filter((c) =>
-      selectedContainers.includes(c.title)
+      selectedContainers.includes(c.title),
     );
 
     const blob = new Blob([JSON.stringify(containersToExport, null, 2)], {
@@ -158,7 +156,7 @@ export default function ProjectManager() {
     reader.onload = (event) => {
       try {
         const importedData = JSON.parse(event.target?.result as string);
-        
+
         // Basic validation to ensure it's an array of containers
         if (Array.isArray(importedData)) {
           const updatedActiveProject = {
@@ -168,10 +166,13 @@ export default function ProjectManager() {
           };
 
           const updatedProjects = all_projects.map((p) =>
-            p.title === active_project.title ? updatedActiveProject : p
+            p.title === active_project.title ? updatedActiveProject : p,
           );
 
-          localStorage.setItem("RileyProjects", JSON.stringify(updatedProjects));
+          localStorage.setItem(
+            "RileyProjects",
+            JSON.stringify(updatedProjects),
+          );
           handleUpdateProjects();
         } else {
           alert("Invalid file format. Please upload a valid containers JSON.");
@@ -229,7 +230,6 @@ export default function ProjectManager() {
           <div className="flex-1 flex flex-col items-center p-6 sm:p-10 pb-32 h-full overflow-hidden">
             {/* --- Search & Sort Section --- */}
             <div className="w-full max-w-6xl flex flex-wrap sm:flex-nowrap items-center gap-3 mb-8">
-              
               <div className="relative flex-1 group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-cyan-400 transition-colors duration-200" />
                 <input
@@ -277,7 +277,7 @@ export default function ProjectManager() {
                   New
                 </span>
               </button>
-              
+
               <button
                 onClick={handleSaveProject}
                 className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
@@ -291,7 +291,8 @@ export default function ProjectManager() {
             {selectedContainers.length > 0 && (
               <div className="w-full max-w-6xl mb-6 flex items-center justify-between bg-cyan-500/20 border border-cyan-500/30 rounded-xl px-4 py-3 backdrop-blur-md animate-in fade-in slide-in-from-top-4 duration-300">
                 <span className="text-cyan-300 font-medium">
-                  {selectedContainers.length} container{selectedContainers.length > 1 ? "s" : ""} selected
+                  {selectedContainers.length} container
+                  {selectedContainers.length > 1 ? "s" : ""} selected
                 </span>
                 <div className="flex gap-3">
                   <button
@@ -347,7 +348,7 @@ export default function ProjectManager() {
                     </SpotlightCard>
                   </div>
                 )}
-                
+
                 {active_project?.content?.map(
                   (item: project_content, index: number) => {
                     // NEW: check if this specific item is selected
@@ -364,14 +365,16 @@ export default function ProjectManager() {
                         <SpotlightCard
                           // NEW: Change border if selected
                           className={`custom-spotlight-card h-full p-6 rounded-2xl bg-white/5 backdrop-blur-xl border transition-all duration-300 cursor-pointer flex flex-col group hover:-translate-y-1 ${
-                            isSelected ? "border-cyan-500 shadow-cyan-500/20 shadow-lg" : "border-white/10 hover:border-white/20 hover:shadow-2xl hover:shadow-cyan-500/10"
+                            isSelected
+                              ? "border-cyan-500 shadow-cyan-500/20 shadow-lg"
+                              : "border-white/10 hover:border-white/20 hover:shadow-2xl hover:shadow-cyan-500/10"
                           }`}
                           spotlightColor="rgba(0, 229, 255, 0.15)"
                         >
                           {/* Card Header */}
                           <div className="flex items-start justify-between mb-4 relative z-20">
                             {/* NEW: Checkbox to select/deselect container */}
-                            <div 
+                            <div
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevents opening the container modal
                                 toggleSelection(item.title);
@@ -449,7 +452,11 @@ export default function ProjectManager() {
             {containerModalOpen && (
               <ContainerModal
                 onClose={() => {
+                  handleUpdateProjects(); // if they forget to save, atuomatically save the shi
                   setContainerModalOpen(false);
+                }}
+                onUpdate={() => {
+                  handleUpdateProjects(); // when closing attempt to update projects
                 }}
                 project_content={active_project_content!}
                 projects={all_projects}
@@ -460,6 +467,9 @@ export default function ProjectManager() {
               <ModalContainerOptions
                 onClose={() => {
                   setIsContainerOptionOpen(false);
+                }}
+                onUpdate={() => {
+                  handleUpdateProjects();   
                 }}
                 active_project={active_project}
                 projects={all_projects}

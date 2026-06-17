@@ -7,9 +7,10 @@ interface ContainerModalProps {
   active_project: project;
   project_content: project_content;
   onClose: () => void;
+  onUpdate: () => void;
 }
 
-export default function ContainerModal({ project_content, onClose, projects, active_project }: ContainerModalProps) {
+export default function ContainerModal({ project_content, onClose, projects, active_project, onUpdate }: ContainerModalProps) {
   // Local state for editing
   const [title, setTitle] = useState(project_content.title || '');
   const [information, setInformation] = useState(project_content.information || '');
@@ -54,7 +55,7 @@ export default function ContainerModal({ project_content, onClose, projects, act
 
     // 4. Save and close
     localStorage.setItem("RileyProjects", JSON.stringify(newProjects));
-    onClose();
+    onUpdate();
   };
 
   const handleDelete = () => {
