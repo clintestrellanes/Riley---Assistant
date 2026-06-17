@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2, X, Edit2 } from "lucide-react"; // Requires: npm install lucide-react
+import { Trash2, X } from "lucide-react"; // Requires: npm install lucide-react
 
 import type {
   project,

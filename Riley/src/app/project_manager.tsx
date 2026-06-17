@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -61,20 +61,12 @@ export default function ProjectManager() {
   const [isContainerOptionOpen, setIsContainerOptionOpen] =
     useState<boolean>(false);
 
-  // specific content inside a project
   const [active_project_content, set_active_project_content] =
     useState<project_content | null>(null);
 
-  // NEW: State to track selected containers for export
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
   
-  // NEW: Hidden file input ref for importing
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // NEW: Clear selections if the user switches active projects
-  useEffect(() => {
-    setSelectedContainers([]);
-  }, [active_project?.title]);
 
   const handleUpdateProjects = () => {
     const savedProjects = JSON.parse(
@@ -184,8 +176,8 @@ export default function ProjectManager() {
         } else {
           alert("Invalid file format. Please upload a valid containers JSON.");
         }
-      } catch (error) {
-        alert("Failed to parse JSON file.");
+      } catch {
+        alert("Failed to parse JSON file. Please check the format.");
       }
     };
     reader.readAsText(file);
@@ -223,6 +215,10 @@ export default function ProjectManager() {
           }}
           onUpdate={() => {
             handleUpdateProjects();
+          }}
+          updateActiveProject={(project) => {
+            setSelectedContainers([]);
+            set_active_project(project);
           }}
         />
         {!active_project ? (

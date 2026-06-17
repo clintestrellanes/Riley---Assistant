@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { 
   X, 
   Calendar as CalendarIcon, 
@@ -34,63 +34,175 @@ export default function EventDrawer({
   selectedDate,
 }: EventDrawerProps) {
   // --- STATE BOUNDS ---
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [allDay, setAllDay] = useState(true);
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('10:00');
-  const [location, setLocation] = useState('');
-  
-  // Guests collection states
-  const [guestEmail, setGuestEmail] = useState('');
-  const [guests, setGuests] = useState<string[]>([]);
-  
-  // Custom Tag Color
-  const [selectedColor, setSelectedColor] = useState('blue');
-  
-  // Permissions States
-  const [modifyPerm, setModifyPerm] = useState(false);
-  const [inviteOthersPerm, setInviteOthersPerm] = useState(true);
-  const [seeGuestListPerm, setSeeGuestListPerm] = useState(true);
+  type FormState = {
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    allDay: boolean;
+    startTime: string;
+    endTime: string;
+    location: string;
+    guestEmail: string;
+    guests: string[];
+    selectedColor: string;
+    modifyPerm: boolean;
+    inviteOthersPerm: boolean;
+    seeGuestListPerm: boolean;
+  };
+
+  type FormAction = 
+    | { type: 'SET_ALL'; payload: FormState }
+    | { type: 'SET_TITLE'; payload: string }
+    | { type: 'SET_DESCRIPTION'; payload: string }
+    | { type: 'SET_START_DATE'; payload: string }
+    | { type: 'SET_END_DATE'; payload: string }
+    | { type: 'SET_ALL_DAY'; payload: boolean }
+    | { type: 'SET_START_TIME'; payload: string }
+    | { type: 'SET_END_TIME'; payload: string }
+    | { type: 'SET_LOCATION'; payload: string }
+    | { type: 'SET_GUEST_EMAIL'; payload: string }
+    | { type: 'SET_GUESTS'; payload: string[] }
+    | { type: 'SET_SELECTED_COLOR'; payload: string }
+    | { type: 'SET_MODIFY_PERM'; payload: boolean }
+    | { type: 'SET_INVITE_OTHERS_PERM'; payload: boolean }
+    | { type: 'SET_SEE_GUEST_LIST_PERM'; payload: boolean };
+
+  const initialFormState: FormState = {
+    title: '',
+    description: '',
+    startDate: '',
+    endDate: '',
+    allDay: true,
+    startTime: '09:00',
+    endTime: '10:00',
+    location: '',
+    guestEmail: '',
+    guests: [],
+    selectedColor: 'blue',
+    modifyPerm: false,
+    inviteOthersPerm: true,
+    seeGuestListPerm: true,
+  };
+
+  const formReducer = (state: FormState, action: FormAction): FormState => {
+    switch (action.type) {
+      case 'SET_ALL':
+        return action.payload;
+      case 'SET_TITLE':
+        return { ...state, title: action.payload };
+      case 'SET_DESCRIPTION':
+        return { ...state, description: action.payload };
+      case 'SET_START_DATE':
+        return { ...state, startDate: action.payload };
+      case 'SET_END_DATE':
+        return { ...state, endDate: action.payload };
+      case 'SET_ALL_DAY':
+        return { ...state, allDay: action.payload };
+      case 'SET_START_TIME':
+        return { ...state, startTime: action.payload };
+      case 'SET_END_TIME':
+        return { ...state, endTime: action.payload };
+      case 'SET_LOCATION':
+        return { ...state, location: action.payload };
+      case 'SET_GUEST_EMAIL':
+        return { ...state, guestEmail: action.payload };
+      case 'SET_GUESTS':
+        return { ...state, guests: action.payload };
+      case 'SET_SELECTED_COLOR':
+        return { ...state, selectedColor: action.payload };
+      case 'SET_MODIFY_PERM':
+        return { ...state, modifyPerm: action.payload };
+      case 'SET_INVITE_OTHERS_PERM':
+        return { ...state, inviteOthersPerm: action.payload };
+      case 'SET_SEE_GUEST_LIST_PERM':
+        return { ...state, seeGuestListPerm: action.payload };
+      default:
+        return state;
+    }
+  };
+
+  const [formState, dispatch] = useReducer(formReducer, initialFormState);
+
+  // Convenience getters for compatibility
+  const {
+    title,
+    description,
+    startDate,
+    endDate,
+    allDay,
+    startTime,
+    endTime,
+    location,
+    guestEmail,
+    guests,
+    selectedColor,
+    modifyPerm,
+    inviteOthersPerm,
+    seeGuestListPerm,
+  } = formState;
+
+  const setTitle = (value: string) => dispatch({ type: 'SET_TITLE', payload: value });
+  const setDescription = (value: string) => dispatch({ type: 'SET_DESCRIPTION', payload: value });
+  const setStartDate = (value: string) => dispatch({ type: 'SET_START_DATE', payload: value });
+  const setEndDate = (value: string) => dispatch({ type: 'SET_END_DATE', payload: value });
+  const setAllDay = (value: boolean) => dispatch({ type: 'SET_ALL_DAY', payload: value });
+  const setStartTime = (value: string) => dispatch({ type: 'SET_START_TIME', payload: value });
+  const setEndTime = (value: string) => dispatch({ type: 'SET_END_TIME', payload: value });
+  const setLocation = (value: string) => dispatch({ type: 'SET_LOCATION', payload: value });
+  const setGuestEmail = (value: string) => dispatch({ type: 'SET_GUEST_EMAIL', payload: value });
+  const setGuests = (value: string[]) => dispatch({ type: 'SET_GUESTS', payload: value });
+  const setSelectedColor = (value: string) => dispatch({ type: 'SET_SELECTED_COLOR', payload: value });
+  const setModifyPerm = (value: boolean) => dispatch({ type: 'SET_MODIFY_PERM', payload: value });
+  const setInviteOthersPerm = (value: boolean) => dispatch({ type: 'SET_INVITE_OTHERS_PERM', payload: value });
+  const setSeeGuestListPerm = (value: boolean) => dispatch({ type: 'SET_SEE_GUEST_LIST_PERM', payload: value });
 
   // Sync state with active event or defaults when drawer is mounted/changed
   useEffect(() => {
     if (event) {
-      // Editing Mode
-      setTitle(event.title || '');
-      setDescription(event.description || '');
-      setStartDate(event.startDate || '');
-      setEndDate(event.endDate || '');
-      setAllDay(event.allDay);
-      setStartTime(event.startTime || '09:00');
-      setEndTime(event.endTime || '10:00');
-      setLocation(event.location || '');
-      setGuests(event.guests || []);
-      setSelectedColor(event.color || 'blue');
-      setModifyPerm(event.permissions?.modify ?? false);
-      setInviteOthersPerm(event.permissions?.inviteOthers ?? true);
-      setSeeGuestListPerm(event.permissions?.seeGuestList ?? true);
+      // Editing Mode - single dispatch call to batch all updates
+      dispatch({
+        type: 'SET_ALL',
+        payload: {
+          title: event.title || '',
+          description: event.description || '',
+          startDate: event.startDate || '',
+          endDate: event.endDate || '',
+          allDay: event.allDay,
+          startTime: event.startTime || '09:00',
+          endTime: event.endTime || '10:00',
+          location: event.location || '',
+          guestEmail: '',
+          guests: event.guests || [],
+          selectedColor: event.color || 'blue',
+          modifyPerm: event.permissions?.modify ?? false,
+          inviteOthersPerm: event.permissions?.inviteOthers ?? true,
+          seeGuestListPerm: event.permissions?.seeGuestList ?? true,
+        },
+      });
     } else {
-      // Creating New Mode
-      setTitle('');
-      setDescription('');
-      
+      // Creating New Mode - single dispatch call to batch all updates
       const formattedDefault = formatDate(selectedDate);
-      setStartDate(formattedDefault);
-      setEndDate(formattedDefault);
-      setAllDay(true);
-      setStartTime('09:00');
-      setEndTime('10:00');
-      setLocation('');
-      setGuests([]);
-      setSelectedColor('blue');
-      setModifyPerm(false);
-      setInviteOthersPerm(true);
-      setSeeGuestListPerm(true);
+      dispatch({
+        type: 'SET_ALL',
+        payload: {
+          title: '',
+          description: '',
+          startDate: formattedDefault,
+          endDate: formattedDefault,
+          allDay: true,
+          startTime: '09:00',
+          endTime: '10:00',
+          location: '',
+          guestEmail: '',
+          guests: [],
+          selectedColor: 'blue',
+          modifyPerm: false,
+          inviteOthersPerm: true,
+          seeGuestListPerm: true,
+        },
+      });
     }
-    setGuestEmail('');
   }, [event, selectedDate, isOpen]);
 
   if (!isOpen) return null;

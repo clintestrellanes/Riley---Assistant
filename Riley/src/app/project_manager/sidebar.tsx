@@ -14,6 +14,7 @@ interface SidebarProps {
   active_project: project;
   set_active_project: (project: project) => void;
   onUpdate: () => void;
+  updateActiveProject: (project: project) => void;
 }
 
 export default function Sidebar({
@@ -21,6 +22,7 @@ export default function Sidebar({
   active_project,
   set_active_project,
   onUpdate,
+  updateActiveProject,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [hoveredProject, setHoveredProject] = useState<number | null>(null);
@@ -173,14 +175,14 @@ export default function Sidebar({
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "application/json";
-    input.onchange = (e: any) => {
+    input.onchange = (e: Event) => {
       const file = e.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = (event: any) => {
+      reader.onload = (event: ProgressEvent<FileReader>) => {
         try {
-          const importedData = JSON.parse(event.target.result);
+          const importedData = JSON.parse(event.target?.result as string);
 
           // Handle both single project and array of projects
           const projectsToAdd = Array.isArray(importedData)
@@ -189,12 +191,12 @@ export default function Sidebar({
 
           // Check for duplicate project titles
           const existingTitles = projects.map((p) => p.title.toLowerCase());
-          const duplicates = projectsToAdd.filter((p: any) =>
+          const duplicates = projectsToAdd.filter((p: all_projects[number]) =>
             existingTitles.includes(p.title.toLowerCase())
           );
 
           if (duplicates.length > 0) {
-            const duplicateNames = duplicates.map((p: any) => p.title).join(", ");
+            const duplicateNames = duplicates.map((p: all_projects[number]) => p.title).join(", ");
             alert(
               `Projects with these names already exist and were skipped: ${duplicateNames}`
             );
@@ -202,7 +204,7 @@ export default function Sidebar({
 
           // Filter out duplicates and add new projects
           const newProjects = projectsToAdd.filter(
-            (p: any) => !existingTitles.includes(p.title.toLowerCase())
+            (p: all_projects[number]) => !existingTitles.includes(p.title.toLowerCase())
           );
 
           if (newProjects.length === 0) {
@@ -274,7 +276,10 @@ export default function Sidebar({
                   onMouseEnter={() => setHoveredProject(idx)}
                   onMouseLeave={() => setHoveredProject(null)}
                   onClick={() => {
-                    if (!isEditing) set_active_project(proj);
+                    if (!isEditing) {
+                      updateActiveProject(proj) // pass to project_manager
+                      set_active_project(proj)
+                    };
                   }}
                   onDoubleClick={() => startEditing(proj.title)}
                   className={`group relative flex items-center justify-between pl-3 pr-2 py-2.5 rounded-lg cursor-pointer transition-all duration-200 ${

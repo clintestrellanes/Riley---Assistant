@@ -35,7 +35,7 @@ export default function Chat({ projects, active_project, onUpdate }: ChatProps) 
   const modalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const AIResponse = async (query: string): Promise<any> => {
+  const AIResponse = async (query: string): Promise<{ response: { message: string; project_data?: project; container_data?: project_content[] } }> => {
     try {
       const res = await AiChat(query, projects, active_project);
       
